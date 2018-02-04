@@ -4,14 +4,19 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+/**
+ * Lottery class
+ * @author shuoqiaoliu
+ *
+ */
 public class Lottery {
-
+	
+	private final int swapUnit = 3;
 	private int timeQuantum;
 	private List<Data> info;
 	private ResultGroup result;
 	private int Max_priority;
-	
+	private int average;
 	
 	public Lottery(String fileDir,int timeQuantum){
 		this.timeQuantum = timeQuantum;
@@ -20,6 +25,7 @@ public class Lottery {
 		info = new ArrayList<Data>(test1.getSortted());
 		getMaxpriority();
 		cpuRunning();
+		getAverageCT();
 	}
 	
 	private void cpuRunning(){
@@ -48,7 +54,7 @@ public class Lottery {
 			//pro
 			if(last_proc != cpuIn.getPid()){
 				if(last_proc!=-1)
-					cpuTime += 3;	
+					cpuTime += swapUnit;	
 			}
 			//if endBurst time <= 0 
 			if(endBurst_Time == 0){
@@ -71,7 +77,7 @@ public class Lottery {
 				cpuTime = completion_Time;
 			}
 			
-			
+			// update last proc for next run checking
 			last_proc = cpuIn.getPid();
 			
 			//delete
@@ -82,10 +88,22 @@ public class Lottery {
 		
 	}
 	
-	public void createResultFile(int testfileNumber) throws FileNotFoundException{
-		result.createResultFile("RoundRobin "+String.valueOf(testfileNumber),testfileNumber);
+	private void getAverageCT(){
+		for(ResultCreator r :result.getResultGroup()){
+			average += r.getCompletionTime();
+		}
+		average = average / info.size();
 	}
 	
+	public void createResultFile(int testfileNumber) throws FileNotFoundException{
+		result.createResultFile("Lottery"+String.valueOf(timeQuantum),testfileNumber,average);
+	}
+	/**
+	 * Get specific PID
+	 * @param num random number
+	 * @param l	  Data list
+	 * @return decide which processor going to use
+	 */
 	private int checkUse(int num,List<Data> l){
 		int result = 0;
 		int count = 0;
@@ -98,13 +116,20 @@ public class Lottery {
 		}
 		return result;
 	}
-	
+	/**
+	 * Sum all priority
+	 */
 	private void getMaxpriority(){
 		Max_priority = 0;
 		for(Data d : info){
 			Max_priority += d.getPriority();
 		}
 	}
+	/**
+	 * Get random number
+	 * @param max
+	 * @return num
+	 */
 	private int getRandomNumber(int max){
 		Random r = new Random();
 		return r.nextInt((max - 1) +1) +1;

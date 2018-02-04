@@ -4,7 +4,11 @@ import java.util.List;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-
+/**
+ * Store all the result creators
+ * @author shuoqiaoliu
+ *
+ */
 public class ResultGroup {
 	
 		private List<ResultCreator> resultGroup;
@@ -17,10 +21,16 @@ public class ResultGroup {
 		public Boolean add(ResultCreator r){
 			return resultGroup.add(r);
 		}
-		
-		public void createResultFile(String fileType,int testFile_Number) throws FileNotFoundException{
+		/**
+		 * Create csv file
+		 * @param fileType
+		 * @param testFile_Number
+		 * @param averageCT
+		 * @throws FileNotFoundException
+		 */
+		public void createResultFile(String fileType,int testFile_Number,int averageCT) throws FileNotFoundException{
 			PrintWriter pw = new PrintWriter(
-					new File("scheduler_"+fileType+"-testfile_"+String.valueOf(testFile_Number)+".csv"));
+					new File("Scheduler_"+fileType+"-testfile_"+String.valueOf(testFile_Number)+".csv"));
 	        StringBuilder sb = new StringBuilder();
 	        sb.append("CpuTime");
 	        sb.append(',');
@@ -45,17 +55,11 @@ public class ResultGroup {
 		        sb.append(String.valueOf(r.getCompletionTime()));
 		        sb.append('\n');
 	        }
+	        sb.append("Average CT:");
+	        sb.append(',');
+	        sb.append(String.valueOf(averageCT));
 	        pw.write(sb.toString());
 	        pw.close();
-		}
-		public void shiftAllCpuTime(int num){
-			for(ResultCreator r:resultGroup){
-				int newCputTime = r.getCpuTime() - num;
-				if(newCputTime<0){
-					newCputTime = 0;
-				}
-				r.setCpuTime(newCputTime);
-			}
 		}
 		
 		public List<ResultCreator> getResultGroup() {
